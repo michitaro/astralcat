@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     }
     if (output_file == NULL || optind != argc - 1) {
         argument_error:
-            fprintf(stderr, "usage: %s [--out=OUTPUT] INPUT\n", argv[0]);
+            fprintf(stderr, "usage: %s {-o OUTPUT | --out=OUTPUT} INPUT\n", argv[0]);
             return 1;
     }
     input_file = argv[optind];
