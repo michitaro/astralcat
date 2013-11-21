@@ -1,4 +1,4 @@
-#include <unistd.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <sli/fitscc.h>
 #include <libraw/libraw.h>
@@ -15,7 +15,10 @@ int main(int argc, char *argv[]) {
                *input_file;
 
     int opt;
-    while ((opt = getopt(argc, argv, "o:")) != -1) {
+    option long_options[] = {
+        {"out", required_argument, NULL, 'o'}
+    };
+    while ((opt = getopt_long(argc, argv, "o:", long_options, NULL)) != -1) {
         switch (opt) {
             case 'o':
                 output_file = optarg;
@@ -26,7 +29,7 @@ int main(int argc, char *argv[]) {
     }
     if (output_file == NULL || optind != argc - 1) {
         argument_error:
-            fprintf(stderr, "usage: %s [-o OUTPUT] INPUT\n", argv[0]);
+            fprintf(stderr, "usage: %s [--out=OUTPUT] INPUT\n", argv[0]);
             return 1;
     }
     input_file = argv[optind];
