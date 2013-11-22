@@ -20,7 +20,8 @@ int main(int argc, char *argv[]) try {
 
     int opt;
     option long_options[] = {
-        {"out", required_argument, NULL, 'o'}
+        {"out", required_argument, NULL, 'o'},
+        {NULL,  0,                 NULL, 0}
     };
     while ((opt = getopt_long(argc, argv, "o:", long_options, NULL)) != -1) {
         switch (opt) {
