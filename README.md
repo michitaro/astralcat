@@ -10,6 +10,8 @@ usage
 
 requirements
 ------------
+  * C++0x compiler
+    * http://gcc.gnu.org
   * sfitsio
     * http://www.ir.isas.jaxa.jp/~cyamauch/sli/index.html
   * libraw

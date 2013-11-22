@@ -66,6 +66,15 @@ void read_raw(fitscc &fits, const char *filename) {
         .append_image("CHANNEL_G", 0, FITS::FLOAT_T)
         .append_image("CHANNEL_B", 0, FITS::FLOAT_T);
 
+    const auto &info = iProcessor.imgdata.other;
+    for (int i = 1;  i <= 3;  i++) {
+        auto &hdu = fits.image(fits.length() - i);
+        hdu.header("RAW-ISO ").assign(info.iso_speed);
+        hdu.header("EXPTIME ").assign(info.shutter);
+        hdu.header("RAW-APT ").assign(info.aperture);
+        hdu.header("RAW-FOCL").assign(info.focal_len);
+    }
+
     mdarray_float &r = fits.image(fits.length() - 3).float_array(),
                   &g = fits.image(fits.length() - 2).float_array(),
                   &b = fits.image(fits.length() - 1).float_array();
