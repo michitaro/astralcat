@@ -14,3 +14,5 @@ requirements
     * http://www.ir.isas.jaxa.jp/~cyamauch/sli/index.html
   * libraw
     * http://www.libraw.org
+  * boost
+    * http://www.boost.org

@@ -1,7 +1,11 @@
 #include <getopt.h>
-#include <stdio.h>
+#include <iostream>
 #include <sli/fitscc.h>
 #include <libraw/libraw.h>
+#include <boost/format.hpp>
+#include <stdexcept>
+#include <string.h>
+#include <boost/format.hpp>
 
 
 using namespace sli;
@@ -10,7 +14,7 @@ using namespace sli;
 static void read_raw(fitscc &fits, const char *filename);
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) try {
     const char *output_file = NULL,
                *input_file;
 
@@ -29,7 +33,7 @@ int main(int argc, char *argv[]) {
     }
     if (output_file == NULL || optind != argc - 1) {
         argument_error:
-            fprintf(stderr, "usage: %s {-o OUTPUT | --out=OUTPUT} INPUT\n", argv[0]);
+            std::cerr << boost::format("usage: %s {-o OUTPUT | --out=OUTPUT} INPUT") % argv[0] << std::endl;
             return 1;
     }
     input_file = argv[optind];
@@ -40,11 +44,17 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
+}
 
 
 void read_raw(fitscc &fits, const char *filename) {
     LibRaw iProcessor;
-    iProcessor.open_file(filename);
+    if (int e = iProcessor.open_file(filename)) {
+        throw std::runtime_error((boost::format("failed to open %s: %s") % filename % (e > 0 ? strerror(e) : LibRaw::strerror(e))).str());
+    }
 
     int width  = iProcessor.imgdata.sizes.width  / 2,
         height = iProcessor.imgdata.sizes.height / 2;
