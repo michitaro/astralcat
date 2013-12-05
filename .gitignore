@@ -1,2 +1,3 @@
 *.o
+*.fits
 .DS_Store
