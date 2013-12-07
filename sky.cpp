@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) try {
         {"sky",      required_argument, NULL, 's'},
         {"catalog",  required_argument, NULL, 'c'},
         {"detect",   required_argument, NULL, 'd'},
-        {"crop",     required_argument, NULL, 'C'},
+        {"crop",     no_argument,       NULL, 'C'},
         {"mask",     required_argument, NULL, 'm'},
         {NULL,       0,                 NULL, 0}
     };
