@@ -95,7 +95,6 @@ namespace {
     class GridEstimator : public SkyEstimator {
         SplineSurface::PTR spline;
         int width, height;
-        mdarray_float mask;
     public:
         GridEstimator(StrKeyValue args, const mdarray_float &src) {
             reverse_merge(args, {{"interpolation_method", "akima"},
@@ -112,9 +111,6 @@ namespace {
 
             spline = SplineSurface::initialize(args["interpolation_method"].c_str());
 
-            mask.resize_2d(width, height);
-            mask = 1.;
-
             for (int gy = 0;  gy < gny;  gy++) {
                 logger.debug("row: %d/%d", gy, gny);
                 double y = (gy + 0.5) * binsize;
@@ -122,11 +118,6 @@ namespace {
                 for (int gx = 0;  gx < gnx;  gx++) {
                     mdarray_float section;
                     section = src.section(gx * binsize, binsize, gy *binsize, binsize);
-                    if (valid_count(section) != section.length()) {
-                        section = NAN;
-                        mask.paste(section, gx * binsize, gy * binsize);
-                    }
-                        
                     double x = (gx + 0.5) * binsize,
                            z = local_sky(section);
                     spline->add_xz(x, z);
@@ -136,7 +127,6 @@ namespace {
 
         mdarray_float surface() const {
             mdarray_float sky = spline->surface(0, width, 0, height, width, height);
-            sky *= mask;
             return sky;
         }
     };
