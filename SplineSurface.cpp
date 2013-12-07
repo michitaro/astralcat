@@ -21,8 +21,11 @@ namespace {
         gsl_interp_accel *acc;
         double xmin, xmax;
         std::vector<double> xs, ys;
+
     public:
         typedef std::shared_ptr<Interp> PTR;
+        struct TooFewSamples {};
+
         Interp(const gsl_interp_type *interp_type, const std::vector<double> &x_src, const std::vector<double> &y_src) {
             assert(x_src.size() == y_src.size());
 
@@ -33,7 +36,9 @@ namespace {
                 }
             }
 
-            assert(xs.size() >= interp_type->min_size);
+            if (xs.size() < interp_type->min_size) {
+                throw TooFewSamples();
+            }
 
             interp = gsl_interp_alloc(interp_type, xs.size());
             acc = gsl_interp_accel_alloc();
@@ -41,10 +46,12 @@ namespace {
             xmin = interp->xmin;
             xmax = interp->xmax;
         }
+
         ~Interp() {
             gsl_interp_free(interp);
             gsl_interp_accel_free(acc);
         }
+
         double extrapolation(double x, double x0) const {
             /*
              * f(d+x) ~ f(x) + d f'(x) + 1/2 d^2 f''(x) + ...
@@ -55,6 +62,7 @@ namespace {
                     d = x - x0;
             return y0 + d*a1 + (1./2.)*d*d*a2;
         }
+
         double eval(double x) const {
             if (x < xmin) {
                 return extrapolation(x, xmin);
@@ -66,6 +74,7 @@ namespace {
                 return gsl_interp_eval(interp, &xs[0], &ys[0], x, acc);
             }
         }
+
     };
 
 
@@ -110,7 +119,12 @@ namespace {
                     y[i] = sample[i][j].y;
                     z[i] = sample[i][j].z;
                 }
-                cols[j] = std::make_shared<Interp>(interp_type, y, z);
+                try {
+                    cols[j] = std::make_shared<Interp>(interp_type, y, z);
+                }
+                catch (const Interp::TooFewSamples &e) {
+                    cols[j] = std::shared_ptr<Interp>(nullptr);
+                }
             }
 
             logger.debug("making rows interpolators...");
@@ -118,10 +132,12 @@ namespace {
                 double t = (double)yi / height,
                        y = t*max_y + (1.-t)*min_y;
                 // make a row interpolator
-                std::vector<double> x(cols.size()), z(cols.size());
+                std::vector<double> x, z;
                 for (int j = 0;  j < cols.size();  j++) {
-                    x[j] = sample[0][j].x;
-                    z[j] = cols[j]->eval(y);
+                    if (cols[j]) {
+                        x.push_back(sample[0][j].x);
+                        z.push_back(cols[j]->eval(y));
+                    }
                 }
                 Interp row_interp(interp_type, x, z);
                 for (int xi = 0;  xi < width;  xi++) {
