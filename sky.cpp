@@ -85,14 +85,12 @@ int main(int argc, char *argv[]) try {
     }
 
     if (detect_desc && catalog_file) {
-        //ds9::show(data);
         auto log_indent = logger.info("detecting sources...").indent();
         auto sources = detect(detect_desc, data);
         std::ofstream os(catalog_file);
         for (const Source &s: sources) {
             os << s << std::endl;
         }
-        //ds9::mark(sources);
     }
 
     if (output_file) {
